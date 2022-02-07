@@ -5,6 +5,8 @@ import requests
 import json
 import os
 
+SKIP_CODES = ['403']
+SKIP_TYPES = ['state']
 
 def main():
     counter = 0
@@ -42,11 +44,11 @@ def main():
         for entry_path in entries:
 
             receive_type = entry_path.split('_')[-2]
-            if receive_type in ['state']:
+            if receive_type in SKIP_TYPES:
                 continue
 
             receive_code = entry_path.split('_')[-1]
-            if receive_code in ['403']:
+            if receive_code in SKIP_CODES:
                 continue
 
             for file_path in os.listdir(f'{date}/{entry_path}'):
@@ -57,8 +59,7 @@ def main():
                     json_log.get('uri'),
                     data=json.dumps(json_log.get('data')),
                     headers={'content-type': 'application/json'})
-                response_text = json.loads(response.text)
-                if response.status_code == 403:
+                if response.status_code == 201:
                     counter_success += 1
                     changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
                                    f'{date}/{entry_path}/{file_path} successfully resent')
