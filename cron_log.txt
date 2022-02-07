@@ -1,0 +1,20 @@
+Selected dates: ['07.02.2022']
+07.02.2022 folder was not found.
+
+Selected dates: ['07.02.2022']
+07.02.2022 folder was not found.
+
+Selected dates: ['07.02.2022']
+ [1/1 ] 07.02.2022 error_for_salem_docOutgoing_502 10:04:51:615.json 403 [2/2 ] 07.02.2022 error_for_salem_docOutgoing_502 10:13:51:615.json 403 [3/3 ] 07.02.2022 error_for_salem_docOutgoing_502 10:05:51:615.json 403 [4/4 ] 07.02.2022 error_for_salem_docOutgoing_502 10:1:51:615.json 403 [5/5 ] 07.02.2022 error_for_salem_docOutgoing_502 10:03:51:615.json 403 [6/6 ] 07.02.2022 error_for_salem_docOutgoing_502 10:12:51:615.json 403 [7/7 ] 07.02.2022 error_for_salem_docOutgoing_502 10:02:51:615.json 403 [8/8 ] 07.02.2022 error_for_salem_docOutgoing_502 10:08:51:615.json 403 [9/9 ] 07.02.2022 error_for_salem_docOutgoing_502 10:15:51:615.json 403 [10/10 ] 07.02.2022 error_for_salem_docOutgoing_502 10:14:51:615.json 403 [11/11 ] 07.02.2022 error_for_salem_docOutgoing_502 10:10:51:615.json 403 [12/12 ] 07.02.2022 error_for_salem_docOutgoing_502 10:07:51:615.json 403 [13/13 ] 07.02.2022 error_for_salem_docOutgoing_502 10:06:51:615.json 403 [14/14 ] 07.02.2022 error_for_salem_docOutgoing_502 10:09:51:615.json 403
+Selected dates: ['07.02.2022']
+
+Selected dates: ['07.02.2022']
+
+Selected dates: ['07.02.2022']
+
+Selected dates: ['07.02.2022']
+
+Selected dates: ['07.02.2022']
+
+Selected dates: ['07.02.2022']
+
