@@ -60,7 +60,7 @@ def main():
                 response_text = json.loads(response.text)
                 if response.status_code == 403:
                     counter_success += 1
-                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %h:%m")}'
+                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
                                    f'{date}/{entry_path}/{file_path} successfully resent')
                     if args.delete == 1:
                         changes[-1] += ' and deleted.'

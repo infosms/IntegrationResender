@@ -1,0 +1,2 @@
+Every minute:
+* * * * * cd /home/khandosaly/job/Resender && /usr/bin/env python3 /home/khandosaly/job/Resender/resender.py 1 current>> /home/khandosaly/job/Resender/cron_log.txt
