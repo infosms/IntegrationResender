@@ -1,12 +1,13 @@
 import argparse
 import datetime
-
 import requests
 import json
 import os
+import config
 
 SKIP_CODES = ['403']
 SKIP_TYPES = ['state']
+
 
 def main():
     counter = 0
@@ -42,18 +43,20 @@ def main():
 
         for entry_path in entries:
 
-            receive_type = entry_path.split('_')[-2]
-            if receive_type in SKIP_TYPES:
-                continue
+            # receive_type = entry_path.split('_')[-2]
+            # if receive_type not in config.TYPES_TO_RESEND:
+            #     continue
 
             receive_code = entry_path.split('_')[-1]
-            if receive_code in SKIP_CODES:
+            if receive_code not in config.CODES_TO_RESEND:
                 continue
 
             for file_path in os.listdir(f'{date}/{entry_path}'):
                 counter += 1
                 with open(f'{date}/{entry_path}/{file_path}', 'r+') as f:
                     json_log = json.load(f)
+                if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
+                    break
                 response = requests.post(
                     json_log.get('uri'),
                     data=json.dumps(json_log.get('data')),
