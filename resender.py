@@ -16,10 +16,9 @@ def main():
 
     parser = argparse.ArgumentParser('parser')
     parser.add_argument('delete', type=int, help='Available types: 0 - Without delete 1 - With delete')
-    parser.add_argument('date', type=str, help='Accepts: \n '
-                                               '1. "current" - current day'
-                                               '2. "01.01.2022" - exact date'
-                                               '3. "01.01.2022-03.02.2022" - period')
+    parser.add_argument('date', type=str, help='"current" - current day | '
+                                               '"01.01.2022" - exact date |'
+                                               '"01.01.2022-03.02.2022" - period')
 
     args = parser.parse_args()
     if args.date == 'current':
