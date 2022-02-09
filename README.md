@@ -14,3 +14,9 @@ crontab -e
 ```
 python3 resender.py -h
 ```
+
+## Настройка статус кодов, типов для пропуска:
+```
+SKIP_CODES = ['403']
+SKIP_TYPES = ['state']
+```
