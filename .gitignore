@@ -3,3 +3,4 @@
 cron_log.txt
 resender_logs.txt
 __pycache__/
+config.py
