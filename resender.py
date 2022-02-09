@@ -5,9 +5,6 @@ import json
 import os
 import config
 
-SKIP_CODES = ['403']
-SKIP_TYPES = ['state']
-
 
 def main():
     counter = 0
