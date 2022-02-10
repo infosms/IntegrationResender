@@ -5,12 +5,10 @@ import json
 import os
 import config
 
-
 def main():
     counter = 0
     counter_success = 0
     changes = []
-    dates = []
 
     parser = argparse.ArgumentParser('parser')
     parser.add_argument('delete', type=int, help='Available types: 0 - Without delete 1 - With delete')
@@ -40,10 +38,6 @@ def main():
 
         for entry_path in entries:
 
-            # receive_type = entry_path.split('_')[-2]
-            # if receive_type not in config.TYPES_TO_RESEND:
-            #     continue
-
             receive_code = entry_path.split('_')[-1]
             if receive_code not in config.CODES_TO_RESEND:
                 continue
@@ -51,23 +45,26 @@ def main():
             for file_path in os.listdir(f'{date}/{entry_path}'):
                 counter += 1
                 with open(f'{date}/{entry_path}/{file_path}', 'r+') as f:
-                    json_log = json.load(f)
+                    try:
+                        json_log = json.load(f)
+                    except:
+                        continue
                 if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
-                    break
+                    continue
+
                 response = requests.post(
                     json_log.get('uri'),
                     data=json.dumps(json_log.get('data')),
                     headers={'content-type': 'application/json'})
-                if response.status_code == 201:
-                    counter_success += 1
+                if response.status_code in [200, 201, 406]:
+                    if response.status_code != 406:
+                        counter_success += 1
                     changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
-                                   f'{date}/{entry_path}/{file_path} successfully resent')
+                                   f'{date}/{entry_path}/{file_path} successfully resent (or 406 ')
                     if args.delete == 1:
                         changes[-1] += ' and deleted.'
                         os.remove(f'{date}/{entry_path}/{file_path}')
-                print('\r', f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} '
-                            f'{response.status_code}', end='')
-    print()
+                print(f'[{counter_success}/{counter} ] {date} {entry_path} {file_path}{response.status_code}')
 
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
