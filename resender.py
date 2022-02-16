@@ -59,8 +59,8 @@ def main():
                 if response.status_code in [200, 201, 406]:
                     if response.status_code != 406:
                         counter_success += 1
-                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
-                                   f'{date}/{entry_path}/{file_path} successfully resent (or 406 ')
+                        changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
+                                       f'{date}/{entry_path}/{file_path} successfully resent')
                     if args.delete == 1:
                         changes[-1] += ' and deleted.'
                         os.remove(f'{date}/{entry_path}/{file_path}')
