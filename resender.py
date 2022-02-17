@@ -55,15 +55,23 @@ def main():
                 response = requests.post(
                     json_log.get('uri'),
                     data=json.dumps(json_log.get('data')),
-                    headers={'content-type': 'application/json'})
-                if response.status_code in [200, 201, 406]:
-                    if response.status_code != 406:
-                        counter_success += 1
-                        changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
-                                       f'{date}/{entry_path}/{file_path} successfully resent')
+                    headers={'content-type': 'application/json'},
+                    verify=False)
+                if response.status_code in [200, 201]:
+                    counter_success += 1
+                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
+                                   f'{date}/{entry_path}/{file_path} successfully resent')
                     if args.delete == 1:
-                        changes[-1] += ' and deleted.'
+                        changes[-1] += ' and was deleted.'
                         os.remove(f'{date}/{entry_path}/{file_path}')
+
+                if response.status_code == 406:
+                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
+                                   f'{date}/{entry_path}/{file_path} returned 406')
+                    if args.delete == 1:
+                        changes[-1] += ' and was deleted.'
+                        os.remove(f'{date}/{entry_path}/{file_path}')
+
                 print(f'[{counter_success}/{counter} ] {date} {entry_path} {file_path}{response.status_code}')
 
     with open(f'resender_logs.txt', 'a+') as f:
