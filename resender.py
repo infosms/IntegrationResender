@@ -49,7 +49,10 @@ def main():
                         json_log = json.load(f)
                     except:
                         continue
-                if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
+                try:
+                    if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
+                        continue
+                except:
                     continue
 
                 response = requests.post(
