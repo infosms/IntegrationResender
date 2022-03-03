@@ -35,7 +35,7 @@ async def show_files(message: types.Message):
             continue
         for entry_path in entries:
             receive_code = entry_path.split('_')[-1]
-            if receive_code not in ['403', '500', '502', '503', '504']:
+            if receive_code not in config.CODES_TO_RESEND:
                 continue
             msg += f'{entry_path}: \n'
             for file_path in os.listdir(f'{date}/{entry_path}'):
