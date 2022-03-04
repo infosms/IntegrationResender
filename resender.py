@@ -48,11 +48,13 @@ def main():
                     try:
                         json_log = json.load(f)
                     except:
+                        print(f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} json_error')
                         continue
                 try:
                     if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
                         continue
                 except:
+                    print(f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} url_error')
                     continue
 
                 response = requests.post(

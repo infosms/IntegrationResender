@@ -98,11 +98,15 @@ async def resend(message: types.Message):
                     try:
                         json_log = json.load(f)
                     except:
+                        msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} ' \
+                               f'json_load_error\n'
                         continue
                 try:
                     if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
                         continue
                 except:
+                    msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} ' \
+                           f'url_error\n'
                     continue
 
                 response = requests.post(
