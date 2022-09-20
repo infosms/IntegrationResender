@@ -111,7 +111,7 @@ async def resend(message: types.Message):
             for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
                 counter += 1
 
-                prefix = f'[{counter_success}/{counter} ] {entry_path} {file_path} \n'
+                prefix = f'[{counter_success}/{counter} ] {entry_path.replace("_", "")} {file_path} \n'
 
                 with open(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}', 'r+') as f:
                     try:
