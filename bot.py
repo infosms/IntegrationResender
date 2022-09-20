@@ -28,7 +28,7 @@ async def show_files(message: types.Message):
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
-        msg += f'*Дата: {date}*\n'
+        msg += f'Дата: {date}\n'
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
