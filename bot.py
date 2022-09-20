@@ -41,19 +41,19 @@ async def show_files(message: types.Message):
             if receive_code not in config.CODES_TO_RESEND:
                 continue
 
-            msg += f'{entry_path}: \n'
+            msg += f'*{entry_path}:* \n'
             for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
                 with open(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}', 'r+') as f:
                     try:
                         json_log = json.load(f)
                     except Exception as e:
-                        msg += f'-{file_path} Не удалось открыть json: {e}\n'
+                        msg += f'-{file_path} \n  Не удалось открыть json: {e}\n'
                         continue
 
                 try:
                     url = json_log.get('uri').split('v1')[1]
                 except Exception as e:
-                    msg += f'-{file_path} Не удалось получить ссылку домена: {e}\n'
+                    msg += f'-{file_path} \n  Не удалось получить ссылку домена: {e}\n'
                     continue
 
                 if url not in config.URLS_TO_RESEND:
@@ -61,27 +61,27 @@ async def show_files(message: types.Message):
 
                 err_data = json_log.get('error_data')
                 if not err_data:
-                    msg += f'-{file_path} Не удалось получить причину ошибки\n'
+                    msg += f'-{file_path} \n  Не удалось получить причину ошибки\n'
                     continue
 
                 if receive_code == '500':
                     err_arr = json_log['error_data'].split('\n')
                     if len(err_arr) < 2:
-                        msg += f'-{file_path} Не удалось получить причину ошибки 500\n'
+                        msg += f'-{file_path} \n  Не удалось получить причину ошибки 500\n'
                         continue
-                    msg += f'-{file_path} {err_arr[1]}\n'
+                    msg += f'-{file_path} \n  {err_arr[1]}\n'
                 else:
                     err_detail = err_data.get('detail')
                     if not err_detail:
-                        msg += f'-{file_path} Не удалось получить причину ошибки\n'
+                        msg += f'-{file_path} \n  Не удалось получить причину ошибки\n'
                         continue
-                    msg += f'-{file_path} {err_detail}\n'
+                    msg += f'-{file_path} \n  {err_detail}\n'
 
     if len(msg) > 4096:
         for x in range(0, len(msg), 4096):
-            await message.answer(msg[x:x + 4096])
+            await message.answer(msg[x:x + 4096], parse_mode='Markdown')
     else:
-        await message.answer(msg)
+        await message.answer(msg, parse_mode='Markdown')
 
 
 @dp.message_handler(commands=['resend'])
@@ -95,7 +95,7 @@ async def resend(message: types.Message):
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
-        msg += f'Дата: {date}\n'
+        msg += f'*Дата: {date}\n*'
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
@@ -110,12 +110,14 @@ async def resend(message: types.Message):
 
             for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
                 counter += 1
+
+                prefix = f'[{counter_success}/{counter} ] {entry_path} {file_path} \n'
+
                 with open(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}', 'r+') as f:
                     try:
                         json_log = json.load(f)
                     except Exception as e:
-                        msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} ' \
-                               f'Не удалось откыть json {e}\n'
+                        msg += f'{prefix} Не удалось открыть json: {e}'
                         continue
 
                 try:
@@ -142,20 +144,38 @@ async def resend(message: types.Message):
                         f'успешно переотправлен и удалён.'
                     )
                     os.remove(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}')
-                    msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} Успешно переотправлен\n'
+                    msg += f'{prefix} Успешно переотправлен\n'
                     continue
 
-                msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} {response.status_code} \n' \
-                       f'{response.text} \n'
+                if response.status_code in [500]:
+                    resp_arr = response.text.split('\n')
+
+                    if len(resp_arr) < 2:
+                        msg += f'{prefix} {response.status_code} {response.text}'
+                        continue
+                    msg += f'{prefix} {response.status_code} {" ".join(resp_arr[:2])}'
+                else:
+                    try:
+                        resp = json.loads(response.text)
+                    except Exception as e:
+                        msg += f'{prefix} {response.status_code} Не удалось получить json ответа.'
+                        continue
+
+                    resp_detail = resp.get('detail')
+                    if not resp_detail:
+                        msg += f'{prefix} {response.status_code} Не удалось получить детальную причину.\n'
+                        continue
+
+                    msg += f'{prefix} {response.status_code} {resp_detail} \n'
 
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
 
     if len(msg) > 4096:
         for x in range(0, len(msg), 4096):
-            await message.answer(msg[x:x + 4096])
+            await message.answer(msg[x:x + 4096], parse_mode='Markdown')
     else:
-        await message.answer(msg)
+        await message.answer(msg, parse_mode='Markdown')
 
 if __name__ == '__main__':
     executor.start_polling(dp)
