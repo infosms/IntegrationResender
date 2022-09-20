@@ -6,25 +6,15 @@ import requests
 
 from aiogram import Bot, Dispatcher, executor, types
 
+import utils
+
 bot = Bot(token=config.BOT_TOKEN)
 dp = Dispatcher(bot)
 
 
-def get_dates(args_date):
-    if args_date == 'current':
-        return [datetime.datetime.now().strftime('%d.%m.%Y')]
-    elif '-' in args_date:
-        start_date = datetime.datetime.strptime(args_date.split('-')[0], '%d.%m.%Y')
-        end_date = datetime.datetime.strptime(args_date.split('-')[1], '%d.%m.%Y')
-        days = [start_date + datetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-        return [x.strftime('%d.%m.%Y') for x in days]
-    else:
-        return [args_date]
-
-
 @dp.message_handler(commands=['show_files'])
 async def show_files(message: types.Message):
-    dates = get_dates(message.get_args())
+    dates = utils.get_dates(message.get_args())
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
@@ -90,7 +80,7 @@ async def resend(message: types.Message):
     counter_success = 0
     changes = []
 
-    dates = get_dates(message.get_args())
+    dates = utils.get_dates(message.get_args())
 
     msg = f'Выбранные даты: {dates}\n'
 

@@ -4,6 +4,8 @@ import requests
 import json
 import os
 import config
+import utils
+
 
 def main():
     counter = 0
@@ -11,29 +13,18 @@ def main():
     changes = []
 
     parser = argparse.ArgumentParser('parser')
-    parser.add_argument('delete', type=int, help='Available types: 0 - Without delete 1 - With delete')
-    parser.add_argument('date', type=str, help='"current" - current day | '
-                                               '"01.01.2022" - exact date |'
-                                               '"01.01.2022-03.02.2022" - period')
-
+    parser.add_argument('date', type=str)
     args = parser.parse_args()
-    if args.date == 'current':
-        dates = [datetime.datetime.now().strftime('%d.%m.%Y')]
-    elif '-' in args.date:
-        start_date = datetime.datetime.strptime(args.date.split('-')[0], '%d.%m.%Y')
-        end_date = datetime.datetime.strptime(args.date.split('-')[1], '%d.%m.%Y')
-        days = [start_date + datetime.timedelta(days=i) for i in range((end_date-start_date).days + 1)]
-        dates = [x.strftime('%d.%m.%Y') for x in days]
-    else:
-        dates = [args.date]
+    dates = utils.get_dates(args.date)
 
-    print(f'Selected dates: {dates}')
+    print(f'Выбранные даты: {dates}\n')
 
     for date in dates:
+        print(f'*Дата: {date}\n*')
         try:
-            entries = os.listdir(date)
+            entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
-            print(f'{date} folder was not found.')
+            print(f'`Папка {date} пока не создана`\n')
             continue
 
         for entry_path in entries:
@@ -42,42 +33,65 @@ def main():
             if receive_code not in config.CODES_TO_RESEND:
                 continue
 
-            for file_path in os.listdir(f'{date}/{entry_path}'):
+            for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
                 counter += 1
-                with open(f'{date}/{entry_path}/{file_path}', 'r+') as f:
+
+                prefix = f'[{counter_success}/{counter} ] {entry_path.replace("_", "")} {file_path}'
+
+                with open(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}', 'r+') as f:
                     try:
                         json_log = json.load(f)
-                    except:
-                        print(f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} json_error')
+                    except Exception as e:
+                        print(f'{prefix} \n `Не удалось открыть json: {e}`\n')
                         continue
+
                 try:
-                    if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
-                        continue
-                except:
-                    print(f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} url_error')
+                    url = json_log.get('uri').split('v1')[1]
+                except Exception as e:
+                    print(f'{prefix} \n `Не удалось получить ссылку домена: {e}\n`')
+                    continue
+
+                if url not in config.URLS_TO_RESEND:
                     continue
 
                 response = requests.post(
                     json_log.get('uri'),
                     data=json.dumps(json_log.get('data')),
                     headers={'content-type': 'application/json'},
-                    verify=False)
+                    verify=False
+                )
+
                 if response.status_code in [200, 201]:
                     counter_success += 1
-                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
-                                   f'{date}/{entry_path}/{file_path} successfully resent')
-                    if args.delete == 1:
-                        changes[-1] += ' and was deleted.'
-                        os.remove(f'{date}/{entry_path}/{file_path}')
+                    changes.append(
+                        f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
+                        f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path} '
+                        f'успешно переотправлен и удалён.'
+                    )
+                    os.remove(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}')
+                    print(f'{prefix} Успешно переотправлен\n')
+                    continue
 
-                if response.status_code == 406:
-                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
-                                   f'{date}/{entry_path}/{file_path} returned 406')
-                    if args.delete == 1:
-                        changes[-1] += ' and was deleted.'
-                        os.remove(f'{date}/{entry_path}/{file_path}')
+                if response.status_code in [500]:
+                    resp_arr = response.text.split('\n')
 
-                print(f'[{counter_success}/{counter} ] {date} {entry_path} {file_path}{response.status_code}')
+                    if len(resp_arr) < 2:
+                        print(f'{prefix} \n {response.status_code} `{response.text}`\n')
+                        continue
+                    print(f'{prefix} \n {response.status_code} `{" ".join(resp_arr[:2])}`\n')
+                else:
+                    try:
+                        resp = json.loads(response.text)
+                    except Exception as e:
+                        print(f'{prefix} \n {response.status_code} `Не удалось получить json ответа.`\n')
+                        continue
+
+                    resp_detail = resp.get('detail')
+                    if not resp_detail:
+                        print(f'{prefix} \n {response.status_code} `Не удалось получить детальную причину.`\n')
+                        continue
+
+                    print(f'{prefix} \n {response.status_code} `{resp_detail}` \n')
 
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
