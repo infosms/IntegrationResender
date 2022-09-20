@@ -6,52 +6,77 @@ import requests
 
 from aiogram import Bot, Dispatcher, executor, types
 
-# Launching
-bot = Bot(token='5142923760:AAFB6oIm-hhBakUG1Jo1QinCKq1Nnw5miHQ')
+bot = Bot(token=config.BOT_TOKEN)
 dp = Dispatcher(bot)
 
 
-@dp.message_handler(commands=['show_files'])
-async def show_files(message: types.Message):
-    args_date = message.get_args()
+def get_dates(args_date):
     if args_date == 'current':
-        dates = [datetime.datetime.now().strftime('%d.%m.%Y')]
+        return [datetime.datetime.now().strftime('%d.%m.%Y')]
     elif '-' in args_date:
         start_date = datetime.datetime.strptime(args_date.split('-')[0], '%d.%m.%Y')
         end_date = datetime.datetime.strptime(args_date.split('-')[1], '%d.%m.%Y')
         days = [start_date + datetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-        dates = [x.strftime('%d.%m.%Y') for x in days]
+        return [x.strftime('%d.%m.%Y') for x in days]
     else:
-        dates = [args_date]
+        return [args_date]
 
+
+@dp.message_handler(commands=['show_files'])
+async def show_files(message: types.Message):
+    dates = get_dates(message.get_args())
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
         msg += f'Дата: {date}\n'
         try:
-            entries = os.listdir(date)
+            entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
             msg += f'Папка {date} пока не создана\n'
             continue
+
         for entry_path in entries:
             receive_code = entry_path.split('_')[-1]
+
             if receive_code not in config.CODES_TO_RESEND:
                 continue
+
             msg += f'{entry_path}: \n'
-            for file_path in os.listdir(f'{date}/{entry_path}'):
-                with open(f'{date}/{entry_path}/{file_path}', 'r+') as f:
+            for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
+                with open(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}', 'r+') as f:
                     try:
                         json_log = json.load(f)
-                    except:
+                    except Exception as e:
+                        msg += f'-{file_path} Не удалось открыть json: {e}\n'
                         continue
+
                 try:
-                    if receive_code == '500':
-                        error = json_log['error_data'].split('\n')[1]
-                    else:
-                        error = json_log['error_data']['detail']
-                except:
-                    error = ''
-                msg += f'-{file_path} {error} \n'
+                    url = json_log.get('uri').split('v1')[1]
+                except Exception as e:
+                    msg += f'-{file_path} Не удалось получить ссылку домена: {e}\n'
+                    continue
+
+                if url not in config.URLS_TO_RESEND:
+                    continue
+
+                err_data = json_log.get('error_data')
+                if not err_data:
+                    msg += f'-{file_path} Не удалось получить причину ошибки\n'
+                    continue
+
+                if receive_code == '500':
+                    err_arr = json_log['error_data'].split('\n')
+                    if len(err_arr) < 2:
+                        msg += f'-{file_path} Не удалось получить причину ошибки 500\n'
+                        continue
+                    msg += f'-{file_path} {err_arr[1]}\n'
+                else:
+                    err_detail = err_data.get('detail')
+                    if not err_detail:
+                        msg += f'-{file_path} Не удалось получить причину ошибки\n'
+                        continue
+                    msg += f'-{file_path} {err_detail}\n'
+
     if len(msg) > 4096:
         for x in range(0, len(msg), 4096):
             await message.answer(msg[x:x + 4096])
@@ -65,23 +90,14 @@ async def resend(message: types.Message):
     counter_success = 0
     changes = []
 
-    args_date = message.get_args()
-    if args_date == 'current':
-        dates = [datetime.datetime.now().strftime('%d.%m.%Y')]
-    elif '-' in args_date:
-        start_date = datetime.datetime.strptime(args_date.split('-')[0], '%d.%m.%Y')
-        end_date = datetime.datetime.strptime(args_date.split('-')[1], '%d.%m.%Y')
-        days = [start_date + datetime.timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-        dates = [x.strftime('%d.%m.%Y') for x in days]
-    else:
-        dates = [args_date]
+    dates = get_dates(message.get_args())
 
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
         msg += f'Дата: {date}\n'
         try:
-            entries = os.listdir(date)
+            entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
             msg += f'Папка {date} пока не создана\n'
             continue
@@ -92,42 +108,45 @@ async def resend(message: types.Message):
             if receive_code not in config.CODES_TO_RESEND:
                 continue
 
-            for file_path in os.listdir(f'{date}/{entry_path}'):
+            for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
                 counter += 1
-                with open(f'{date}/{entry_path}/{file_path}', 'r+') as f:
+                with open(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}', 'r+') as f:
                     try:
                         json_log = json.load(f)
-                    except:
+                    except Exception as e:
                         msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} ' \
-                               f'json_load_error\n'
+                               f'Не удалось откыть json {e}\n'
                         continue
+
                 try:
-                    if json_log.get('uri').split('v1')[1] not in config.URLS_TO_RESEND:
-                        continue
-                except:
-                    msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} ' \
-                           f'url_error\n'
+                    url = json_log.get('uri').split('v1')[1]
+                except Exception as e:
+                    msg += f'-{file_path} Не удалось получить ссылку домена: {e}\n'
+                    continue
+
+                if url not in config.URLS_TO_RESEND:
                     continue
 
                 response = requests.post(
                     json_log.get('uri'),
                     data=json.dumps(json_log.get('data')),
                     headers={'content-type': 'application/json'},
-                    verify=False)
+                    verify=False
+                )
+
                 if response.status_code in [200, 201]:
                     counter_success += 1
-                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
-                                   f'{date}/{entry_path}/{file_path} successfully resent')
-                    changes[-1] += ' and was deleted.'
-                    os.remove(f'{date}/{entry_path}/{file_path}')
+                    changes.append(
+                        f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
+                        f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path} '
+                        f'успешно переотправлен и удалён.'
+                    )
+                    os.remove(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}')
+                    msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} Успешно переотправлен\n'
+                    continue
 
-                if response.status_code == 406:
-                    changes.append(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
-                                   f'{date}/{entry_path}/{file_path} returned 406')
-                    changes[-1] += ' and was deleted.'
-                    os.remove(f'{date}/{entry_path}/{file_path}')
-
-                msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path}{response.status_code}\n'
+                msg += f'[{counter_success}/{counter} ] {date} {entry_path} {file_path} {response.status_code} \n' \
+                       f'{response.text} \n'
 
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
