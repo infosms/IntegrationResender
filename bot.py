@@ -47,13 +47,13 @@ async def show_files(message: types.Message):
                     try:
                         json_log = json.load(f)
                     except Exception as e:
-                        msg += f'-{file_path} \n  Не удалось открыть json: {e}\n'
+                        msg += f'-{file_path} \n  `Не удалось открыть json: {e}`\n'
                         continue
 
                 try:
                     url = json_log.get('uri').split('v1')[1]
                 except Exception as e:
-                    msg += f'-{file_path} \n  Не удалось получить ссылку домена: {e}\n'
+                    msg += f'-{file_path} \n  `Не удалось получить ссылку домена: {e}`\n'
                     continue
 
                 if url not in config.URLS_TO_RESEND:
@@ -61,19 +61,19 @@ async def show_files(message: types.Message):
 
                 err_data = json_log.get('error_data')
                 if not err_data:
-                    msg += f'-{file_path} \n  Не удалось получить причину ошибки\n'
+                    msg += f'-{file_path} \n  `Не удалось получить причину ошибки`\n'
                     continue
 
                 if receive_code == '500':
                     err_arr = json_log['error_data'].split('\n')
                     if len(err_arr) < 2:
-                        msg += f'-{file_path} \n  Не удалось получить причину ошибки 500\n'
+                        msg += f'-{file_path} \n  `Не удалось получить причину ошибки 500`\n'
                         continue
                     msg += f'-{file_path} \n  {err_arr[1]}\n'
                 else:
                     err_detail = err_data.get('detail')
                     if not err_detail:
-                        msg += f'-{file_path} \n  Не удалось получить причину ошибки\n'
+                        msg += f'-{file_path} \n  `Не удалось получить причину ошибки`\n'
                         continue
                     msg += f'-{file_path} \n  {err_detail}\n'
 
@@ -99,7 +99,7 @@ async def resend(message: types.Message):
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
-            msg += f'Папка {date} пока не создана\n'
+            msg += f'`Папка {date} пока не создана`\n'
             continue
 
         for entry_path in entries:
@@ -117,13 +117,13 @@ async def resend(message: types.Message):
                     try:
                         json_log = json.load(f)
                     except Exception as e:
-                        msg += f'{prefix} Не удалось открыть json: {e}'
+                        msg += f'{prefix} `Не удалось открыть json: {e}`\n'
                         continue
 
                 try:
                     url = json_log.get('uri').split('v1')[1]
                 except Exception as e:
-                    msg += f'-{file_path} Не удалось получить ссылку домена: {e}\n'
+                    msg += f'-{file_path} `Не удалось получить ссылку домена: {e}\n`'
                     continue
 
                 if url not in config.URLS_TO_RESEND:
@@ -151,22 +151,22 @@ async def resend(message: types.Message):
                     resp_arr = response.text.split('\n')
 
                     if len(resp_arr) < 2:
-                        msg += f'{prefix} {response.status_code} {response.text}'
+                        msg += f'{prefix} {response.status_code} `{response.text}`'
                         continue
-                    msg += f'{prefix} {response.status_code} {" ".join(resp_arr[:2])}'
+                    msg += f'{prefix} {response.status_code} `{" ".join(resp_arr[:2])}`'
                 else:
                     try:
                         resp = json.loads(response.text)
                     except Exception as e:
-                        msg += f'{prefix} {response.status_code} Не удалось получить json ответа.'
+                        msg += f'{prefix} {response.status_code} `Не удалось получить json ответа.`\n'
                         continue
 
                     resp_detail = resp.get('detail')
                     if not resp_detail:
-                        msg += f'{prefix} {response.status_code} Не удалось получить детальную причину.\n'
+                        msg += f'{prefix} {response.status_code} `Не удалось получить детальную причину.`\n'
                         continue
 
-                    msg += f'{prefix} {response.status_code} {resp_detail} \n'
+                    msg += f'{prefix} {response.status_code} `{resp_detail}` \n'
 
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
