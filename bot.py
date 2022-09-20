@@ -41,7 +41,7 @@ async def show_files(message: types.Message):
             if receive_code not in config.CODES_TO_RESEND:
                 continue
 
-            msg += f'{entry_path.replace("_", "")}: \n'
+            msg += f'{entry_path}: \n'
             for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
                 with open(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}', 'r+') as f:
                     try:
