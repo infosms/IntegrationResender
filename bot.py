@@ -69,13 +69,13 @@ async def show_files(message: types.Message):
                     if len(err_arr) < 2:
                         msg += f'-{file_path} \n  `Не удалось получить причину ошибки 500`\n'
                         continue
-                    msg += f'-{file_path} \n  {err_arr[1]}\n'
+                    msg += f'-{file_path} \n  `{err_arr[1]}`\n'
                 else:
                     err_detail = err_data.get('detail')
                     if not err_detail:
                         msg += f'-{file_path} \n  `Не удалось получить причину ошибки`\n'
                         continue
-                    msg += f'-{file_path} \n  {err_detail}\n'
+                    msg += f'-{file_path} \n  `{err_detail}`\n'
 
     if len(msg) > 4096:
         for x in range(0, len(msg), 4096):
