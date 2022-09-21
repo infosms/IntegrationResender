@@ -44,8 +44,8 @@ async def show_files(message: types.Message):
                 if data:
                     meta_dict = data.get('metadataSystem')
                     if meta_dict:
-                        meta += f'`Метаданные письма {meta_dict.get("href")}:`\n'
-                        meta += f'`{meta_dict.get("from")} -> {meta_dict.get("performers")}`\n'
+                        meta += f'Метаданные письма {meta_dict.get("href")}:\n'
+                        meta += f'{meta_dict.get("from")} -> {meta_dict.get("performers")}\n'
 
                 try:
                     url = json_log.get('uri').split('v1')[1]
