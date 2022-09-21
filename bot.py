@@ -39,11 +39,18 @@ async def show_files(message: types.Message):
                     except Exception as e:
                         msg += f'-{file_path} \n  `Не удалось открыть json: {e}`\n'
                         continue
+                meta = ''
+                data = json_log.get('data')
+                if data:
+                    meta_dict = data.get('metadataSystem')
+                    if meta_dict:
+                        meta += f'`Метаданные письма {meta_dict.get("href")}:`\n'
+                        meta += f'`{meta_dict.get("from")} -> {meta_dict.get("performers")}`\n'
 
                 try:
                     url = json_log.get('uri').split('v1')[1]
                 except Exception as e:
-                    msg += f'-{file_path} \n  `Не удалось получить ссылку домена: {e}`\n'
+                    msg += f'-{file_path} \n  {meta} `Не удалось получить ссылку домена: {e}`\n'
                     continue
 
                 if url not in config.URLS_TO_RESEND:
@@ -51,21 +58,21 @@ async def show_files(message: types.Message):
 
                 err_data = json_log.get('error_data')
                 if not err_data:
-                    msg += f'-{file_path} \n  `Не удалось получить причину ошибки`\n'
+                    msg += f'-{file_path} \n {meta} `Не удалось получить причину ошибки`\n'
                     continue
 
                 if receive_code == '500':
                     err_arr = json_log['error_data'].split('\n')
                     if len(err_arr) < 2:
-                        msg += f'-{file_path} \n  `Не удалось получить причину ошибки 500`\n'
+                        msg += f'-{file_path} \n {meta} `Не удалось получить причину ошибки 500`\n'
                         continue
-                    msg += f'-{file_path} \n  `{err_arr[1]}`\n'
+                    msg += f'-{file_path} \n {meta} `{err_arr[1]}`\n'
                 else:
                     err_detail = err_data.get('detail')
                     if not err_detail:
-                        msg += f'-{file_path} \n  `Не удалось получить причину ошибки`\n'
+                        msg += f'-{file_path} \n {meta} `Не удалось получить причину ошибки`\n'
                         continue
-                    msg += f'-{file_path} \n  `{err_detail}`\n'
+                    msg += f'-{file_path} \n {meta} `{err_detail}`\n'
 
     if len(msg) > 4096:
         for x in range(0, len(msg), 4096):
