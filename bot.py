@@ -39,12 +39,13 @@ async def show_files(message: types.Message):
                     except Exception as e:
                         msg += f'-{file_path} \n  `Не удалось открыть json: {e}`\n'
                         continue
+
                 meta = ''
                 data = json_log.get('data')
                 if data:
                     meta_dict = data.get('metadataSystem')
                     if meta_dict:
-                        meta += f'Метаданные письма {meta_dict.get("href")}:\n'
+                        meta += f'{meta_dict.get("href")}:\n'
                         meta += f'{meta_dict.get("from")} -> {meta_dict.get("performers")}\n'
 
                 try:
@@ -117,10 +118,18 @@ async def resend(message: types.Message):
                         msg += f'{prefix} \n `Не удалось открыть json: {e}`\n'
                         continue
 
+                meta = ''
+                data = json_log.get('data')
+                if data:
+                    meta_dict = data.get('metadataSystem')
+                    if meta_dict:
+                        meta += f'{meta_dict.get("href")}:\n'
+                        meta += f'{meta_dict.get("from")} -> {meta_dict.get("performers")}\n'
+
                 try:
                     url = json_log.get('uri').split('v1')[1]
                 except Exception as e:
-                    msg += f'{prefix} \n `Не удалось получить ссылку домена: {e}\n`'
+                    msg += f'{prefix} \n {meta} `Не удалось получить ссылку домена: {e}\n`'
                     continue
 
                 if url not in config.URLS_TO_RESEND:
@@ -141,29 +150,29 @@ async def resend(message: types.Message):
                         f'успешно переотправлен и удалён.'
                     )
                     os.remove(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}')
-                    msg += f'{prefix} Успешно переотправлен\n'
+                    msg += f'{prefix} \n {meta} Успешно переотправлен\n'
                     continue
 
                 if response.status_code in [500]:
                     resp_arr = response.text.split('\n')
 
                     if len(resp_arr) < 2:
-                        msg += f'{prefix} \n {response.status_code} `{response.text}`\n'
+                        msg += f'{prefix} \n {meta} {response.status_code} `{response.text}`\n'
                         continue
-                    msg += f'{prefix} \n {response.status_code} `{" ".join(resp_arr[:2])}`\n'
+                    msg += f'{prefix} \n {meta} {response.status_code} `{" ".join(resp_arr[:2])}`\n'
                 else:
                     try:
                         resp = json.loads(response.text)
                     except Exception as e:
-                        msg += f'{prefix} \n {response.status_code} `Не удалось получить json ответа.`\n'
+                        msg += f'{prefix} \n {meta} {response.status_code} `Не удалось получить json ответа.`\n'
                         continue
 
                     resp_detail = resp.get('detail')
                     if not resp_detail:
-                        msg += f'{prefix} \n {response.status_code} `Не удалось получить детальную причину.`\n'
+                        msg += f'{prefix} \n {meta} {response.status_code} `Не удалось получить детальную причину.`\n'
                         continue
 
-                    msg += f'{prefix} \n {response.status_code} `{resp_detail}` \n'
+                    msg += f'{prefix} \n {meta} {response.status_code} `{resp_detail}` \n'
 
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
