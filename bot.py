@@ -183,5 +183,36 @@ async def resend(message: types.Message):
     else:
         await message.answer(msg, parse_mode='Markdown')
 
+
+@dp.message_handler(commands=['restart'])
+async def resend(message: types.Message):
+    domains = {
+        'salem': 'https://salemoffice.kz/jenkins/buildByToken/build?job=salemoffice&token=BUILD',
+        'kgm': 'https://sed.kazhydromet.kz/jenkins/buildByToken/build?job=sed_salem&token=BUILD',
+        'kaznmu': 'https://salemoffice.kaznmu.edu.kz/jenkins/buildByToken/build?job=salemoffice-kaznmu&token=BUILD',
+        'qazexpo': 'https://doc.qazexpocongress.kz/jenkins/buildByToken/build?job=salemoffice-qec&token=BUILD',
+        'kaznu': 'https://odo.kaznu.kz/jenkins/buildByToken/build?job=KazNU&token=BUILD',
+    }
+
+    servers = list(set([x for x in message.get_args().split(' ') if x in domains.keys()]))
+
+    if not servers:
+        await message.answer('Сервера не выбраны, либо написаны не правильно')
+        return
+
+    m = f'Выбранные сервера: {", ".join(servers)}\n'
+
+    for server in servers:
+        try:
+            response = requests.post(domains.get(server), verify=False)
+            if response.status_code == 201:
+                m += f'{server}: запрос успешно отправлен!\n'
+            else:
+                m += f'{server}: произошла ошибка:\n{response.text}\n'
+        except Exception as e:
+            m += f'{server}: произошла ошибка:\n{e}\n'
+
+    await message.answer(m)
+
 if __name__ == '__main__':
     executor.start_polling(dp)
