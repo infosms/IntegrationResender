@@ -164,6 +164,16 @@ async def resend(message: types.Message):
                     msg += f'{prefix} \n {meta} Успешно переотправлен\n'
                     continue
 
+                if response.status_code in [406]:
+                    changes.append(
+                        f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M")} '
+                        f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path} '
+                        f'был дубликатом и удалён.'
+                    )
+                    os.remove(f'{config.LOG_LOCATION}/{date}/{entry_path}/{file_path}')
+                    msg += f'{prefix} \n {meta} был дубликатом\n'
+                    continue
+
                 if response.status_code in [500]:
                     resp_arr = response.text.split('\n')
 
