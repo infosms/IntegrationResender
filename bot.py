@@ -16,8 +16,7 @@ def get_blocks(lines):
     blocks = [('', 0)]
     for l in lines:
         if len(l) + len(blocks[-1][0]) < 4095:
-            blocks[-1][0] += f'\n{l}'
-            blocks[-1][1] += len(l)
+            blocks[-1] = (f'{blocks[-1][0]}\n{l}', blocks[-1][1] + len(l))
         else:
             blocks.append((l, len(l)))
     return blocks
