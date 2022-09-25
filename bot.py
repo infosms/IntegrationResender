@@ -12,6 +12,17 @@ bot = Bot(token=config.BOT_TOKEN)
 dp = Dispatcher(bot)
 
 
+def get_blocks(lines):
+    blocks = [('', 0)]
+    for l in lines:
+        if len(l) + len(blocks[-1][0]) < 4095:
+            blocks[-1][0] += f'\n{l}'
+            blocks[-1][1] += len(l)
+        else:
+            blocks.append((l, len(l)))
+    return blocks
+
+
 @dp.message_handler(commands=['show_files'])
 async def show_files(message: types.Message):
     dates = utils.get_dates(message.get_args())
@@ -79,14 +90,8 @@ async def show_files(message: types.Message):
                         continue
                     msg += f'-{file_path} \n {meta} `{err_detail}`\n'
 
-    if len(msg) > 4096:
-        for x in range(0, len(msg), 4096):
-            try:
-                await message.answer(msg[x:x + 4096], parse_mode='Markdown')
-            except Exception as e:
-                await message.answer(msg[x:x + 4096])
-    else:
-        await message.answer(msg, parse_mode='Markdown')
+    for txt, ln in get_blocks(msg.split('\n')):
+        await message.answer(txt, parse_mode='Markdown')
 
 
 @dp.message_handler(commands=['resend'])
@@ -198,14 +203,8 @@ async def resend(message: types.Message):
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
 
-    if len(msg) > 4096:
-        for x in range(0, len(msg), 4096):
-            try:
-                await message.answer(msg[x:x + 4096], parse_mode='Markdown')
-            except Exception as e:
-                await message.answer(msg[x:x + 4096])
-    else:
-        await message.answer(msg, parse_mode='Markdown')
+    for txt, ln in get_blocks(msg.split('\n')):
+        await message.answer(txt, parse_mode='Markdown')
 
 
 @dp.message_handler(commands=['restart'])
