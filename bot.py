@@ -69,6 +69,10 @@ async def show_files(message: types.Message):
                         continue
                     msg += f'-{file_path} \n {meta} `{err_arr[1]}`\n'
                 else:
+                    if not isinstance(err_data, dict):
+                        msg += f'-{file_path} \n {meta} `{err_data}`\n'
+                        continue
+
                     err_detail = err_data.get('detail')
                     if not err_detail:
                         msg += f'-{file_path} \n {meta} `Не удалось получить причину ошибки`\n'

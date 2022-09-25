@@ -58,6 +58,10 @@ def main():
                         continue
                     print(f'-{file_path} \n  `{err_arr[1]}`\n')
                 else:
+                    if not isinstance(err_data, dict):
+                        print(f'-{file_path} \n  `{err_data}`\n')
+                        continue
+
                     err_detail = err_data.get('detail')
                     if not err_detail:
                         print(f'-{file_path} \n  `Не удалось получить причину ошибки`\n')
