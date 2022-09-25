@@ -18,7 +18,7 @@ async def show_files(message: types.Message):
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
-        msg += f'Дата: {date}\n'
+        msg += f'###Дата: {date}\n'
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
@@ -79,11 +79,8 @@ async def show_files(message: types.Message):
                         continue
                     msg += f'-{file_path} \n {meta} `{err_detail}`\n'
 
-    if len(msg) > 4096:
-        for x in range(0, len(msg), 4096):
-            await message.answer(msg[x:x + 4096], parse_mode='Markdown')
-    else:
-        await message.answer(msg, parse_mode='Markdown')
+    for day_msg in msg.split('###'):
+        await message.answer(day_msg, parse_mode='Markdown')
 
 
 @dp.message_handler(commands=['resend'])
@@ -97,7 +94,7 @@ async def resend(message: types.Message):
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
-        msg += f'*Дата: {date}\n*'
+        msg += f'###*Дата: {date}\n*'
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
@@ -181,11 +178,8 @@ async def resend(message: types.Message):
     with open(f'resender_logs.txt', 'a+') as f:
         f.writelines(line + '\n' for line in changes)
 
-    if len(msg) > 4096:
-        for x in range(0, len(msg), 4096):
-            await message.answer(msg[x:x + 4096], parse_mode='Markdown')
-    else:
-        await message.answer(msg, parse_mode='Markdown')
+    for day_msg in msg.split('###'):
+        await message.answer(day_msg, parse_mode='Markdown')
 
 
 @dp.message_handler(commands=['restart'])
