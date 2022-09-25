@@ -18,7 +18,7 @@ async def show_files(message: types.Message):
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
-        msg += f'Дата: {date}\n'
+        msg += f'*Дата: {date}*\n'
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
@@ -100,7 +100,7 @@ async def resend(message: types.Message):
     msg = f'Выбранные даты: {dates}\n'
 
     for date in dates:
-        msg += f'*Дата: {date}\n*'
+        msg += f'*Дата: {date}*\n'
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
@@ -136,7 +136,7 @@ async def resend(message: types.Message):
                 try:
                     url = json_log.get('uri').split('v1')[1]
                 except Exception as e:
-                    msg += f'{prefix} \n {meta} `Не удалось получить ссылку домена: {e}\n`'
+                    msg += f'{prefix} \n {meta} `Не удалось получить ссылку домена: {e}`\n'
                     continue
 
                 if url not in config.URLS_TO_RESEND:
@@ -150,7 +150,7 @@ async def resend(message: types.Message):
                         verify=False
                     )
                 except Exception as e:
-                    msg += f'{prefix} \n {meta} `Не удалось послать запрос: {e}\n`'
+                    msg += f'{prefix} \n {meta} `Не удалось послать запрос: {e}`\n'
                     continue
 
                 if response.status_code in [200, 201]:

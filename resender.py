@@ -20,7 +20,7 @@ def main():
     print(f'Выбранные даты: {dates}\n')
 
     for date in dates:
-        print(f'*Дата: {date}\n*')
+        print(f'*Дата: {date}*\n')
         try:
             entries = os.listdir(f'{config.LOG_LOCATION}/{date}')
         except FileNotFoundError:
@@ -48,7 +48,7 @@ def main():
                 try:
                     url = json_log.get('uri').split('v1')[1]
                 except Exception as e:
-                    print(f'{prefix} \n `Не удалось получить ссылку домена: {e}\n`')
+                    print(f'{prefix} \n `Не удалось получить ссылку домена: {e}`\n')
                     continue
 
                 if url not in config.URLS_TO_RESEND:
