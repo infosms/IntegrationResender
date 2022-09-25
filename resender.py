@@ -54,12 +54,16 @@ def main():
                 if url not in config.URLS_TO_RESEND:
                     continue
 
-                response = requests.post(
-                    json_log.get('uri'),
-                    data=json.dumps(json_log.get('data')),
-                    headers={'content-type': 'application/json'},
-                    verify=False
-                )
+                try:
+                    response = requests.post(
+                        json_log.get('uri'),
+                        data=json.dumps(json_log.get('data')),
+                        headers={'content-type': 'application/json'},
+                        verify=False
+                    )
+                except Exception as e:
+                    print(f'{prefix} \n `Не удалось послать запрос: {e}\n`')
+                    continue
 
                 if response.status_code in [200, 201]:
                     counter_success += 1
