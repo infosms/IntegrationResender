@@ -214,6 +214,7 @@ async def resend(message: types.Message):
         'kaznmu': 'https://salemoffice.kaznmu.edu.kz/jenkins/buildByToken/build?job=salemoffice-kaznmu&token=BUILD',
         'qazexpo': 'https://doc.qazexpocongress.kz/jenkins/buildByToken/build?job=salemoffice-qec&token=BUILD',
         'kaznu': 'https://odo.kaznu.kz/jenkins/buildByToken/build?job=KazNU&token=BUILD',
+        'zkatu': 'https://salemoffice.wkau.kz/jenkins/buildByToken/build?job=zkatu&token=BUILD'
     }
 
     servers = list(set([x for x in message.get_args().split(' ') if x in domains.keys()]))
