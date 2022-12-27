@@ -209,7 +209,7 @@ async def resend(message: types.Message):
 @dp.message_handler(commands=['restart'])
 async def resend(message: types.Message):
     domains = {
-        'salem': 'https://salemoffice.kz/jenkins/buildByToken/build?job=salemoffice&token=BUILD',
+        'salem': 'https://salemoffice.kz/jenkins/buildByToken/build?job=SalemCloud&token=BUILD',
         'kgm': 'https://sed.kazhydromet.kz/jenkins/buildByToken/build?job=sed_salem&token=BUILD',
         'kaznmu': 'https://salemoffice.kaznmu.edu.kz/jenkins/buildByToken/build?job=salemoffice-kaznmu&token=BUILD',
         'qazexpo': 'https://doc.qazexpocongress.kz/jenkins/buildByToken/build?job=salemoffice-qec&token=BUILD',
