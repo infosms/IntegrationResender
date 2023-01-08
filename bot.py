@@ -90,7 +90,13 @@ async def show_files(message: types.Message):
                     msg += f'-{file_path} \n {meta} `{err_detail}`\n'
 
     for txt, ln in get_blocks(msg.split('\n')):
-        await message.answer(txt, parse_mode='Markdown')
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text=txt,
+            message_thread_id=message.message_thread_id,
+            parse_mode='Markdown'
+        )
+        #await message.answer(txt, parse_mode='Markdown')
 
 
 @dp.message_handler(commands=['resend'])
@@ -203,7 +209,13 @@ async def resend(message: types.Message):
         f.writelines(line + '\n' for line in changes)
 
     for txt, ln in get_blocks(msg.split('\n')):
-        await message.answer(txt, parse_mode='Markdown')
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text=txt,
+            message_thread_id=message.message_thread_id,
+            parse_mode='Markdown'
+        )
+        #await message.answer(txt, parse_mode='Markdown')
 
 
 @dp.message_handler(commands=['restart'])
@@ -221,7 +233,13 @@ async def resend(message: types.Message):
     servers = list(set([x for x in message.get_args().split(' ') if x in domains.keys()]))
 
     if not servers:
-        await message.answer('Сервера не выбраны, либо написаны не правильно')
+        await bot.send_message(
+            chat_id=message.chat.id,
+            text='Сервера не выбраны, либо написаны не правильно',
+            message_thread_id=message.message_thread_id,
+            parse_mode='Markdown'
+        )
+        #await message.answer('Сервера не выбраны, либо написаны не правильно')
         return
 
     m = f'Выбранные сервера: {", ".join(servers)}\n'
@@ -236,7 +254,13 @@ async def resend(message: types.Message):
         except Exception as e:
             m += f'{server}: произошла ошибка:\n{e}\n'
 
-    await message.answer(m)
+    #await message.answer(m)
+    await bot.send_message(
+        chat_id=message.chat.id,
+        text=m,
+        message_thread_id=message.message_thread_id,
+        parse_mode='Markdown'
+    )
 
 if __name__ == '__main__':
     executor.start_polling(dp)
