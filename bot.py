@@ -120,7 +120,7 @@ async def resend(message: types.Message):
         for entry_path in entries:
 
             receive_code = entry_path.split('_')[-1]
-            if receive_code not in config.CODES_TO_RESEND:
+            if receive_code not in config.CODES_TO_RESEND or receive_code == '405':
                 continue
 
             for file_path in os.listdir(f'{config.LOG_LOCATION}/{date}/{entry_path}'):
