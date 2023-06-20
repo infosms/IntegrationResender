@@ -38,7 +38,7 @@ async def show_files(message: types.Message):
         for entry_path in entries:
             receive_code = entry_path.split('_')[-1]
 
-            if receive_code not in config.CODES_TO_RESEND or receive_code == '405':
+            if receive_code not in config.CODES_TO_RESEND:
                 continue
 
             msg += f'{entry_path.replace("_", ".")}: \n'
